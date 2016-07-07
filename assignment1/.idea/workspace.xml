@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6b2a0e11-b4bd-4136-a4af-559c7879bfe4" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/assignment1.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/assignment2.ipynb" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/assignment.py" afterPath="$PROJECT_DIR$/assignment.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/penn.test.pos.out" afterPath="$PROJECT_DIR$/penn.test.pos.out" />
-    </list>
+    <list default="true" id="6b2a0e11-b4bd-4136-a4af-559c7879bfe4" name="Default" comment="" />
     <ignored path="assignment1.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
