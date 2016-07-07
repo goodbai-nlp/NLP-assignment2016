@@ -17,7 +17,7 @@ import time
 class HMM(object):
     def __init__(self, epsilon=1e-5, training_data=None):
         self.epsilon = epsilon
-        self.ALPHA = 0.9
+        self.ALPHA = 1- self.epsilon
         if training_data is not None:
             self.fit(training_data)
 
@@ -106,16 +106,13 @@ class HMM(object):
             The log probability
         '''
         # Your code here! You need to implement the log transition probability part.
-        # ss = sum([value for key,value in self.bigram.items() if key[1]== tag])
         ss = float(self.unigram[tag])
-        # print '转移概率'+tag+"->"+tag1,self.bigram[(tag,tag1)] , ss
-        # prob = log((self.bigram[(tag,tag1)]+1)/float(ss+len(self.postags)))
-        # print self.bigram[(tag,tag1)]+1,ss+len(self.postags)
         res1 = self.bigram[(tag,tag1)]/ss
         res2 = 1.0/ss
         prob = self.calc(res1,res2)
         return prob
     def calc(self,res1,res2):
+        '''平滑，取对数 平滑的参数是self.ALPHA'''
         return log(self.ALPHA*res1+(1-self.ALPHA)*res2)
 
 def viterbi(words, hmm):
@@ -147,7 +144,7 @@ def viterbi(words, hmm):
                 score[i][j] = hmm.emit(words, i, tag)
         else:
             for j, tag in enumerate(hmm.postags):
-                best, best_t = -1e20, -1
+                # 动态规划计算概率
                 # Your code here, enumerate all the previous tag
                 (best,best_t) = max([(score[i-1][y0] + hmm.trans(tag2,tag) + hmm.emit(words,i,tag),y0) for y0,tag2 in enumerate(hmm.postags) if score[i-1][y0]>-1e20])
                 score[i][j] = best
@@ -167,45 +164,8 @@ def viterbi(words, hmm):
     # convert POStag indexing to POStag str
     result = [hmm.postags[t] for t in reversed(result)]
     return result
-
-training_dataset = [(['dog', 'chase', 'cat'], ['NN', 'VV', 'NN']),
-                    (['I', 'chase', 'dog'], ['PRP', 'VV', 'NN']),
-                    (['cat', 'chase', 'mouse'], ['NN', 'VV', 'NN'])
-                    ]
-
-
-hmm = HMM(training_data=training_dataset)
-
-# Testing if the parameter are correctly estimated.
-# assert hmm.unigram['NN'] == 5
-# # print hmm.bigram['VV','NN']
-# assert hmm.bigram['VV', 'NN'] == 3
-# assert hmm.bigram['NN', 'VV'] == 2
-# assert hmm.cooc['dog', 'NN'] == 2
-# print hmm.emit(list(hmm.wordset),1,'NN')
-# print log(0.7)
-# print hmm.trans('VV','NN')
-# testing_dataset = [['dog', 'chase', 'mouse'],
-#                    ['I', 'chase', 'dog']]
-#
-# for testing_data in testing_dataset:
-#     tags = viterbi(testing_data, hmm)
-#     print (tags)
-# delta[t,i] = self.B[i,O[t]]*np.array([delta[t-1,j]*self.A[j,i]  for j in range(self.N)]).max()
-# (prob, state) = max(
-#     [(V[t - 1][y0] * trans_p[y0].get(y, 0) * emit_p[y].get(obs[t], 0), y0) for y0 in states if
-#      V[t - 1][y0] >= 0])
-
-from dataset import read_dataset
-print (time.strftime('%Y-%m-%d %H:%M:%S'))
-train_dataset = read_dataset('./penn.train.pos.gz')
-devel_dataset = read_dataset('./penn.devel.pos.gz')
-
-print('%d is training sentences.' % len(train_dataset))
-print('%d is development sentences.' % len(devel_dataset))
-
-hmm.fit(train_dataset)
-# print("DONE!!")
+"""
+确定参数alpha
 for x in range(70,100,2):
     hmm.ALPHA = x/100.0
     n_corr, n_total = 0, 0
@@ -223,17 +183,66 @@ for x in range(70,100,2):
             n_total += 1
 
     print("accuracy=%f, alpha = %f" % (float(n_corr)/ n_total,hmm.ALPHA))
+"""
+
+'''test case1
+training_dataset = [(['dog', 'chase', 'cat'], ['NN', 'VV', 'NN']),
+                    (['I', 'chase', 'dog'], ['PRP', 'VV', 'NN']),
+                    (['cat', 'chase', 'mouse'], ['NN', 'VV', 'NN'])
+                    ]
+
+hmm = HMM(training_data=training_dataset)
+
+# Testing if the parameter are correctly estimated.
+assert hmm.unigram['NN'] == 5
+assert hmm.bigram['VV', 'NN'] == 3
+assert hmm.bigram['NN', 'VV'] == 2
+assert hmm.cooc['dog', 'NN'] == 2
+'''
+'''test case2
+testing_dataset = [['dog', 'chase', 'mouse'],
+                   ['I', 'chase', 'dog']]
+
+for testing_data in testing_dataset:
+    tags = viterbi(testing_data, hmm)
+    print (tags)
+'''
+
+from dataset import read_dataset
 print (time.strftime('%Y-%m-%d %H:%M:%S'))
-# print (viterbi(['HMM', 'is', 'a', 'widely', 'used', 'model', '.'], hmm))
-# print (viterbi(['I', 'like', 'cat', ',', 'but', 'I', 'hate', 'eating', 'fish', '.'], hmm))
+train_dataset = read_dataset('./penn.train.pos.gz')
+devel_dataset = read_dataset('./penn.devel.pos.gz')
 
+print('%d is training sentences.' % len(train_dataset))
+print('%d is development sentences.' % len(devel_dataset))
+hmm = HMM()
+hmm.fit(train_dataset)
+n_corr, n_total = 0, 0
+for devel_data_x, devel_data_y in devel_dataset:
+    # print ('case:',case)
+    # print devel_data_x
+    pred_y = viterbi(devel_data_x, hmm)
+    # print pred_y
+    # print devel_data_y
+    for pred_tag, corr_tag in zip(pred_y, devel_data_y):
+        if pred_tag == corr_tag:
+            n_corr += 1
+        n_total += 1
 
-# test_dataset = read_dataset('./penn.test.pos.blind.gz')
-#
-# fpo=open('./penn.test.pos.out', 'w')
-# case = 0
-# for test_data_x, test_data_y in test_dataset:
-#     pred_y = viterbi(test_data_x, hmm)
-#     print(" ".join(y for y in pred_y), file=fpo)
-#
-# fpo.close()
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
+# print("DONE!!")
+'''test case 4
+
+print (viterbi(['HMM', 'is', 'a', 'widely', 'used', 'model', '.'], hmm))
+print (viterbi(['I', 'like', 'cat', ',', 'but', 'I', 'hate', 'eating', 'fish', '.'], hmm))
+'''
+
+test_dataset = read_dataset('./penn.test.pos.blind.gz')
+
+fpo=open('./penn.test.pos.out', 'w')
+case = 0
+for test_data_x, test_data_y in test_dataset:
+    pred_y = viterbi(test_data_x, hmm)
+    print(" ".join(y for y in pred_y), file=fpo)
+fpo.close()
+print("accuracy=%f" % (float(n_corr)/ n_total))
