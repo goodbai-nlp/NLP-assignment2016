@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-@version: ??
+@version: V0.2
 @author: muyeby
 @contact: bxf_hit@163.com
 @site: http://muyeby.github.io
