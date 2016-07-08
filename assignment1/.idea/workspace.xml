@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6b2a0e11-b4bd-4136-a4af-559c7879bfe4" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/assignment.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="6b2a0e11-b4bd-4136-a4af-559c7879bfe4" name="Default" comment="" />
     <ignored path="assignment1.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
@@ -31,8 +28,8 @@
       <file leaf-file-name="Hmm_Postagger.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Hmm_Postagger.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-4002">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="-1886">
+              <caret line="128" column="10" selection-start-line="128" selection-start-column="10" selection-end-line="128" selection-end-column="10" />
               <folding />
             </state>
           </provider>
@@ -132,7 +129,7 @@
   <component name="PropertiesComponent">
     <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../assignment2" />
     <property name="WebServerToolWindowFactoryState" value="false" />
   </component>
   <component name="RunManager" selected="Python.assignment">
@@ -442,8 +439,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Hmm_Postagger.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4002">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state relative-caret-position="-1886">
+          <caret line="128" column="10" selection-start-line="128" selection-start-column="10" selection-end-line="128" selection-end-column="10" />
           <folding />
         </state>
       </provider>

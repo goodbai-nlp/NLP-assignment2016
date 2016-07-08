@@ -10,7 +10,7 @@
 @time: 16-7-7 下午8:44
 """
 from copy import copy
-
+import math
 
 class PerceptronClassifier(object):
     # The perceptron classifier
@@ -26,6 +26,7 @@ class PerceptronClassifier(object):
             The development data, to determine the best iteration.
         '''
         self.max_iter = max_iter
+        self.learnRate = 1e-8
         if training_data is not None:
             self.fit(training_data, devel_data)
 
@@ -58,10 +59,10 @@ class PerceptronClassifier(object):
                 # Your code here, extract features and give it into X, convert POStag to index and
                 # give it to Y
                 X = self.extract_features(words, i, prev)
-                Y = i if tags[i] not in self.label_alphabet.keys() else self.label_alphabet[tags[i]]
+                Y = len(self.label_alphabet) if tags[i] not in self.label_alphabet.keys() else self.label_alphabet[tags[i]]
                 instances.append((X, Y))
                 if tags[i] not in self.label_alphabet.keys():
-                    self.label_alphabet[tags[i]] = i
+                    self.label_alphabet[tags[i]] = len(self.label_alphabet)
                 prev = tags[i]
 
         # Build a mapping from index to label string to recover POStags.
@@ -75,8 +76,8 @@ class PerceptronClassifier(object):
 
         # Allocate the weight matrix W
         self.W = [[0 for j in range(self.D)] for i in range(self.T)]
-        self.best_W = None
-        best_acc = None
+        self.best_W = copy(self.W)
+        best_acc = 0
 
         for it in range(self.max_iter):
             # The training part,
@@ -85,11 +86,15 @@ class PerceptronClassifier(object):
             for X, Y in instances:
                 # Your code here, ake a prediction and give it to Z
                 Z = self._predict(X)
+
                 if Z != Y:
+                    # print '初始预测：', Z, self._score(X, Z), 'Y的分数', self._score(X, Y)
+                    # print self.W[Y]
+                    tmp = self._score(X,Y)
                     # Your code here. If the predict is incorrect, perform the perceptron update
                     n_errors += 1
                     for x in X:
-
+                        self.W[Y][x] += ((10-tmp)*self.learnRate)
                 # The perceptron update part.
 
             print('training error %d' % n_errors)
@@ -147,10 +152,10 @@ class PerceptronClassifier(object):
                         'U3=%s' % context[2],
                         'U4=%s' % context[3],
                         'U5=%s' % context[4],
-                        'U1,2=%s/%s' % (context[1], context[2]),
-                        'U2,3=%s/%s' % (context[2], context[3]),  # Your code here, extract the bigram raw feature,
-                        'U3,4=%s/%s' % (context[3], context[4]), # Your code here, extract the bigram raw feature,
-                        'U4,5=%s/%s' % (context[4], context[5]),  # Your code here, extract the bigram raw feature,
+                        'U1,2=%s/%s' % (context[0], context[1]),
+                        'U2,3=%s/%s' % (context[1], context[2]),  # Your code here, extract the bigram raw feature,
+                        'U3,4=%s/%s' % (context[2], context[3]), # Your code here, extract the bigram raw feature,
+                        'U4,5=%s/%s' % (context[3], context[4]),  # Your code here, extract the bigram raw feature,
                         ]
 
         if prev_tag is not None:
@@ -163,8 +168,10 @@ class PerceptronClassifier(object):
                 index = len(self.feature_alphabet)
                 self.feature_alphabet[f] = index
             # Your code here, map the string feature to index.
-            for item in self.feature_alphabet:
-                mapped_features[self.feature_alphabet[item]] =
+            # for item in self.feature_alphabet.values():
+            #     mapped_features[self.feature_alphabet[item]] = 1
+            if f in self.feature_alphabet:
+                mapped_features.append(self.feature_alphabet[f])
         return mapped_features
 
     def _score(self, features, t):
@@ -185,8 +192,8 @@ class PerceptronClassifier(object):
         '''
         # Your code here, compute the score.
         s=0.0
-        for i in range(len(features)):
-            s += self.W[t][i] * features[i]
+        for x in features:
+            s += self.W[t][x]
         return s
 
     def _predict(self, features):
@@ -206,11 +213,18 @@ class PerceptronClassifier(object):
             The highest scored label's index
         '''
         pred_scores = [self._score(features, y) for y in range(self.T)]
-        best_score, best_y = None, None
+        best_score, best_y = 1e5, -1
         # Your code here, find the highest scored class from pred_scores
-        for i in range(len(pred_scores)):
-            if pred_scores[i]>best_score or not best_score:
-                best_score = pred_scores[i],best_y = i
+        # best_score  = pred_scores[0]
+        # best_y  = 0
+        for index,value in enumerate(pred_scores):
+            tmp = math.fabs(value-10)
+            if tmp< best_score:
+                best_score = tmp
+                best_y = index
+
+        # print 'best:',best_score,best_y
+        # print min([math.fabs(sc - 10) for sc in pred_scores])
         return best_y
 
     def predict(self, words, i, prev_tag=None):
@@ -234,3 +248,49 @@ class PerceptronClassifier(object):
         X = self.extract_features(words, i, prev_tag, False)
         y = self._predict(X)
         return y
+
+
+def greedy_search(words, classifier):
+    '''
+    Perform greedy search on the classifier.
+
+    Parameters
+    ----------
+    words: list(str)
+        The word list
+    classifier: PerceptronClassifier
+        The classifier object.
+    '''
+    prev = '<s>'
+    ret = []
+    for i in range(len(words)):
+        # Your code here, implement the greedy search,
+        label = classifier.predict(words,i,prev)
+        ret.append(classifier.label_alphabet.keys()[label])
+        prev = ret[-1]
+    return ret
+
+from dataset import read_dataset
+
+train_dataset = read_dataset('./penn.train.pos.gz')
+devel_dataset = read_dataset('./penn.devel.pos.gz')
+
+print('%d is training sentences.' % len(train_dataset))
+print('%d is development sentences.' % len(devel_dataset))
+
+perceptron = PerceptronClassifier(max_iter=1, training_data=train_dataset, devel_data=devel_dataset)
+
+n_corr, n_total = 0, 0
+for devel_data in devel_dataset:
+    devel_data_x, devel_data_y = devel_data
+    pred_y = greedy_search(devel_data_x, perceptron)
+    print devel_data_x
+    print pred_y
+    print devel_data_y
+    for pred_tag, corr_tag in zip(pred_y, devel_data_y):
+        if pred_tag == corr_tag:
+            n_corr += 1
+        n_total += 1
+print("accuracy: %f" % (float(n_corr)/ n_total))
+print perceptron.W[1][0:100]
+# print greedy_search(['HMM', 'is', 'a', 'widely', 'used', 'model', '.'], perceptron)
