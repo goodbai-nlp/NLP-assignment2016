@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-@version: ??
+@version: V1.2
 @author: muyeby
 @contact: bxf_hit@163.com
 @site: http://muyeby.github.io
@@ -9,8 +9,9 @@
 @file: assignment2.py
 @time: 16-7-7 下午8:44
 """
+from __future__ import print_function
 from copy import copy
-import math
+import time
 
 class PerceptronClassifier(object):
     # The perceptron classifier
@@ -26,7 +27,7 @@ class PerceptronClassifier(object):
             The development data, to determine the best iteration.
         '''
         self.max_iter = max_iter
-        self.learnRate = 1e-8
+        self.learnRate = 1
         if training_data is not None:
             self.fit(training_data, devel_data)
 
@@ -92,11 +93,16 @@ class PerceptronClassifier(object):
                     # print self.W[Y]
                     tmp = self._score(X,Y)
                     # Your code here. If the predict is incorrect, perform the perceptron update
+
                     n_errors += 1
                     for x in X:
-                        self.W[Y][x] += ((10-tmp)*self.learnRate)
+                        self.W[Y][x] =self.W[Y][x] + 1*self.learnRate
                 # The perceptron update part.
-
+                    for i in range(self.T):
+                        if self._score(X, i) >= tmp and i!=Y:
+                            for x in X:
+                                self.W[i][x] = self.W[i][x] - 1 * self.learnRate
+                    # print '调整后：',self._predict(X),'正确：',Y,'Y的分数',self._score(X,Y)
             print('training error %d' % n_errors)
 
             if devel_data is not None:
@@ -112,6 +118,7 @@ class PerceptronClassifier(object):
                         n_total += 1
                         prev = self.labels[Z]
                 print('accuracy: %f' % (float(n_corr) / n_total))
+                # print 'W0',self.W[10][:100]
                 if best_acc < float(n_corr) / n_total:
                     # If this round is better than before, save it.
                     best_acc = float(n_corr) / n_total
@@ -213,18 +220,17 @@ class PerceptronClassifier(object):
             The highest scored label's index
         '''
         pred_scores = [self._score(features, y) for y in range(self.T)]
-        best_score, best_y = 1e5, -1
+        best_score, best_y = -1e5, -1
         # Your code here, find the highest scored class from pred_scores
         # best_score  = pred_scores[0]
         # best_y  = 0
         for index,value in enumerate(pred_scores):
-            tmp = math.fabs(value-10)
-            if tmp< best_score:
-                best_score = tmp
+            if value > best_score:
+                best_score = value
                 best_y = index
 
         # print 'best:',best_score,best_y
-        # print min([math.fabs(sc - 10) for sc in pred_scores])
+        # print max([math.fabs(sc - 10) for sc in pred_scores])
         return best_y
 
     def predict(self, words, i, prev_tag=None):
@@ -266,12 +272,12 @@ def greedy_search(words, classifier):
     for i in range(len(words)):
         # Your code here, implement the greedy search,
         label = classifier.predict(words,i,prev)
-        ret.append(classifier.label_alphabet.keys()[label])
-        prev = ret[-1]
+        ret.append(classifier.labels[label])
+        prev = classifier.labels[label]
     return ret
 
 from dataset import read_dataset
-
+print (time.strftime('%Y-%m-%d %H:%M:%S'))
 train_dataset = read_dataset('./penn.train.pos.gz')
 devel_dataset = read_dataset('./penn.devel.pos.gz')
 
@@ -280,17 +286,30 @@ print('%d is development sentences.' % len(devel_dataset))
 
 perceptron = PerceptronClassifier(max_iter=1, training_data=train_dataset, devel_data=devel_dataset)
 
+print('========================TEST CASE1==========================')
 n_corr, n_total = 0, 0
 for devel_data in devel_dataset:
     devel_data_x, devel_data_y = devel_data
     pred_y = greedy_search(devel_data_x, perceptron)
-    print devel_data_x
-    print pred_y
-    print devel_data_y
     for pred_tag, corr_tag in zip(pred_y, devel_data_y):
         if pred_tag == corr_tag:
             n_corr += 1
         n_total += 1
 print("accuracy: %f" % (float(n_corr)/ n_total))
-print perceptron.W[1][0:100]
-# print greedy_search(['HMM', 'is', 'a', 'widely', 'used', 'model', '.'], perceptron)
+
+print('========================TEST CASE2==========================')
+
+print (greedy_search(['HMM', 'is', 'a', 'widely', 'used', 'model', '.'], perceptron))
+print (greedy_search(['I', 'like', 'cat', ',', 'but', 'I', 'hate', 'eating', 'fish', '.'], perceptron))
+
+print('========================TEST CASE3==========================')
+test_dataset = read_dataset('./penn.test.pos.blind.gz')
+
+fpo=open('./penn.test.perceptron.pos.out', 'w')
+
+for test_data_x, test_data_y in test_dataset:
+    pred_y = greedy_search(test_data_x, perceptron)
+    print(" ".join(y for y in pred_y), file=fpo)
+fpo.close()
+print('Mission complete!')
+print (time.strftime('%Y-%m-%d %H:%M:%S'))
