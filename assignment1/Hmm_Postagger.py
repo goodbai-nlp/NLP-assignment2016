@@ -185,7 +185,7 @@ for x in range(70,100,2):
     print("accuracy=%f, alpha = %f" % (float(n_corr)/ n_total,hmm.ALPHA))
 """
 
-'''test case1
+print("====================test case1========================")
 training_dataset = [(['dog', 'chase', 'cat'], ['NN', 'VV', 'NN']),
                     (['I', 'chase', 'dog'], ['PRP', 'VV', 'NN']),
                     (['cat', 'chase', 'mouse'], ['NN', 'VV', 'NN'])
@@ -198,16 +198,16 @@ assert hmm.unigram['NN'] == 5
 assert hmm.bigram['VV', 'NN'] == 3
 assert hmm.bigram['NN', 'VV'] == 2
 assert hmm.cooc['dog', 'NN'] == 2
-'''
-'''test case2
+
+print("====================Test case2========================")
 testing_dataset = [['dog', 'chase', 'mouse'],
                    ['I', 'chase', 'dog']]
 
 for testing_data in testing_dataset:
     tags = viterbi(testing_data, hmm)
     print (tags)
-'''
 
+print("====================Test case3========================")
 from dataset import read_dataset
 print (time.strftime('%Y-%m-%d %H:%M:%S'))
 train_dataset = read_dataset('./penn.train.pos.gz')
@@ -219,30 +219,27 @@ hmm = HMM()
 hmm.fit(train_dataset)
 n_corr, n_total = 0, 0
 for devel_data_x, devel_data_y in devel_dataset:
-    # print ('case:',case)
-    # print devel_data_x
     pred_y = viterbi(devel_data_x, hmm)
-    # print pred_y
-    # print devel_data_y
     for pred_tag, corr_tag in zip(pred_y, devel_data_y):
         if pred_tag == corr_tag:
             n_corr += 1
         n_total += 1
-
+print("accuracy=%f" % (float(n_corr)/ n_total))
 print(time.strftime('%Y-%m-%d %H:%M:%S'))
 # print("DONE!!")
-'''test case 4
+print("====================Test case4========================")
 
 print (viterbi(['HMM', 'is', 'a', 'widely', 'used', 'model', '.'], hmm))
 print (viterbi(['I', 'like', 'cat', ',', 'but', 'I', 'hate', 'eating', 'fish', '.'], hmm))
-'''
+
+print("====================Test case5========================")
 
 test_dataset = read_dataset('./penn.test.pos.blind.gz')
-
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
 fpo=open('./penn.test.pos.out', 'w')
 case = 0
 for test_data_x, test_data_y in test_dataset:
     pred_y = viterbi(test_data_x, hmm)
     print(" ".join(y for y in pred_y), file=fpo)
 fpo.close()
-print("accuracy=%f" % (float(n_corr)/ n_total))
+print(time.strftime('%Y-%m-%d %H:%M:%S'))
